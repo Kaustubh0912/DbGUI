@@ -1,9 +1,10 @@
-package DbGUI;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseGUI extends JFrame {
     private JTextArea queryArea;
@@ -48,7 +49,7 @@ public class DatabaseGUI extends JFrame {
         add(filterPanel, BorderLayout.SOUTH);
 
         submitButton.addActionListener(e -> executeQuery());
-        filterButton.addActionListener(e -> applyFilter());
+        filterButton.addActionListener(e -> applyAdvancedFilter());
     }
 
     private void executeQuery() {
@@ -85,12 +86,70 @@ public class DatabaseGUI extends JFrame {
         }
     }
 
-    private void applyFilter() {
-        String text = filterField.getText();
-        if (text.trim().length() == 0) {
+    private void applyAdvancedFilter() {
+        String filterText = filterField.getText().trim();
+        if (filterText.isEmpty()) {
             sorter.setRowFilter(null);
         } else {
-            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+            sorter.setRowFilter(new AdvancedRowFilter(filterText));
+        }
+    }
+
+    private class AdvancedRowFilter extends RowFilter<DefaultTableModel, Integer> {
+        private final List<FilterCriteria> criteriaList = new ArrayList<>();
+
+        public AdvancedRowFilter(String filterText) {
+            String[] criterias = filterText.split("\\s*,\\s*");
+            for (String criteria : criterias) {
+                String[] parts = criteria.split("\\s*=\\s*");
+                if (parts.length == 2) {
+                    criteriaList.add(new FilterCriteria(parts[0], parts[1]));
+                }
+            }
+        }
+
+        @Override
+        public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+            for (FilterCriteria criteria : criteriaList) {
+                int columnIndex = getColumnIndex(criteria.columnName);
+                if (columnIndex != -1) {
+                    Object cellValue = entry.getValue(columnIndex);
+                    if (cellValue == null || !cellValue.toString().equalsIgnoreCase(criteria.value)) {
+                        return false;
+                    }
+                } else {
+                    // If the column name is not found, check all columns
+                    boolean found = false;
+                    for (int i = 0; i < entry.getValueCount(); i++) {
+                        Object cellValue = entry.getValue(i);
+                        if (cellValue != null && cellValue.toString().toLowerCase().contains(criteria.value.toLowerCase())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) return false;
+                }
+            }
+            return true;
+        }
+
+        private int getColumnIndex(String columnName) {
+            for (int i = 0; i < model.getColumnCount(); i++) {
+                if (model.getColumnName(i).equalsIgnoreCase(columnName)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+    }
+
+    private static class FilterCriteria {
+        String columnName;
+        String value;
+
+        FilterCriteria(String columnName, String value) {
+            this.columnName = columnName;
+            this.value = value;
         }
     }
 
