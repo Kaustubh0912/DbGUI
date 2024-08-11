@@ -1,25 +1,29 @@
-public DatabaseGUI() {
+public DatabaseGUI() 
+    {
         setTitle("Display Query Results");
-        setSize(600, 400);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JPanel queryPanel = new JPanel(new BorderLayout(10, 0)); // 10 pixels horizontal gap
+        JPanel queryPanel = new JPanel(new BorderLayout(10, 0)); 
         queryArea = new JTextArea("SELECT * FROM employee", 3, 35);
         queryArea.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.GRAY),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)  // 5 pixel padding on all sides
+            BorderFactory.createEmptyBorder(5, 5, 5, 5) 
         ));
+        queryArea.setLineWrap(true); 
+        queryArea.setWrapStyleWord(true);  
+
+        JScrollPane queryScrollPane = new JScrollPane(queryArea); 
 
         submitButton = new JButton("Submit Query");
-        submitButton.setPreferredSize(new Dimension(submitButton.getPreferredSize().width, queryArea.getPreferredSize().height));
 
-        JPanel buttonPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for centering
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.add(submitButton);
 
-        queryPanel.add(queryArea, BorderLayout.CENTER);
+        queryPanel.add(queryScrollPane, BorderLayout.CENTER);  
         queryPanel.add(buttonPanel, BorderLayout.EAST);
-        queryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 10 pixel padding around the entire panel
+        queryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         add(queryPanel, BorderLayout.NORTH);
 

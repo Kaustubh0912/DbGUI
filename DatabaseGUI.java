@@ -22,26 +22,29 @@ public class DatabaseGUI extends JFrame {
     public DatabaseGUI() 
     {
         setTitle("Display Query Results");
-        setSize(600, 400);
+        setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JPanel queryPanel = new JPanel(new BorderLayout(10, 0)); // 10 pixels horizontal gap
+        JPanel queryPanel = new JPanel(new BorderLayout(10, 0)); 
         queryArea = new JTextArea("SELECT * FROM employee", 3, 35);
         queryArea.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.GRAY),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)  // 5 pixel padding on all sides
+            BorderFactory.createEmptyBorder(5, 5, 5, 5) 
         ));
+        queryArea.setLineWrap(true); 
+        queryArea.setWrapStyleWord(true);  
+
+        JScrollPane queryScrollPane = new JScrollPane(queryArea); 
 
         submitButton = new JButton("Submit Query");
-        submitButton.setPreferredSize(new Dimension(submitButton.getPreferredSize().width, queryArea.getPreferredSize().height));
 
-        JPanel buttonPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for centering
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.add(submitButton);
 
-        queryPanel.add(queryArea, BorderLayout.CENTER);
+        queryPanel.add(queryScrollPane, BorderLayout.CENTER);  
         queryPanel.add(buttonPanel, BorderLayout.EAST);
-        queryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 10 pixel padding around the entire panel
+        queryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         add(queryPanel, BorderLayout.NORTH);
 
@@ -76,16 +79,19 @@ public class DatabaseGUI extends JFrame {
                 int columnCount = metaData.getColumnCount();
 
                 String[] columnNames = new String[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
+                for (int i = 1; i <= columnCount; i++) 
+                {
                     columnNames[i - 1] = metaData.getColumnName(i);
                 }
 
                 model.setColumnIdentifiers(columnNames);
                 model.setRowCount(0);  
 
-                while (rs.next()) {
+                while (rs.next()) 
+                {
                     Object[] row = new Object[columnCount];
-                    for (int i = 1; i <= columnCount; i++) {
+                    for (int i = 1; i <= columnCount; i++) 
+                    {
                         row[i - 1] = rs.getObject(i);
                     }
                     model.addRow(row);
@@ -128,17 +134,22 @@ public class DatabaseGUI extends JFrame {
         public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
             for (FilterCriteria criteria : criteriaList) {
                 int columnIndex = getColumnIndex(criteria.columnName);
-                if (columnIndex != -1) {
+                if (columnIndex != -1) 
+                {
                     Object cellValue = entry.getValue(columnIndex);
-                    if (cellValue == null || !cellValue.toString().equalsIgnoreCase(criteria.value)) {
+                    if (cellValue == null || !cellValue.toString().equalsIgnoreCase(criteria.value)) 
+                    {
                         return false;
                     }
-                } else {
-                    // If the column name is not found, check all columns
+                } 
+                else 
+                {
                     boolean found = false;
-                    for (int i = 0; i < entry.getValueCount(); i++) {
+                    for (int i = 0; i < entry.getValueCount(); i++) 
+                    {
                         Object cellValue = entry.getValue(i);
-                        if (cellValue != null && cellValue.toString().toLowerCase().contains(criteria.value.toLowerCase())) {
+                        if (cellValue != null && cellValue.toString().toLowerCase().contains(criteria.value.toLowerCase())) 
+                        {
                             found = true;
                             break;
                         }
@@ -149,9 +160,12 @@ public class DatabaseGUI extends JFrame {
             return true;
         }
 
-        private int getColumnIndex(String columnName) {
-            for (int i = 0; i < model.getColumnCount(); i++) {
-                if (model.getColumnName(i).equalsIgnoreCase(columnName)) {
+        private int getColumnIndex(String columnName) 
+        {
+            for (int i = 0; i < model.getColumnCount(); i++) 
+            {
+                if (model.getColumnName(i).equalsIgnoreCase(columnName)) 
+                {
                     return i;
                 }
             }
@@ -159,7 +173,8 @@ public class DatabaseGUI extends JFrame {
         }
     }
 
-    private static class FilterCriteria {
+    private static class FilterCriteria 
+    {
         String columnName;
         String value;
 
@@ -169,7 +184,8 @@ public class DatabaseGUI extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         SwingUtilities.invokeLater(() -> new DatabaseGUI().setVisible(true));
     }
 }
