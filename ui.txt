@@ -1,0 +1,43 @@
+public DatabaseGUI() {
+        setTitle("Display Query Results");
+        setSize(600, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        JPanel queryPanel = new JPanel(new BorderLayout(10, 0)); // 10 pixels horizontal gap
+        queryArea = new JTextArea("SELECT * FROM employee", 3, 35);
+        queryArea.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)  // 5 pixel padding on all sides
+        ));
+
+        submitButton = new JButton("Submit Query");
+        submitButton.setPreferredSize(new Dimension(submitButton.getPreferredSize().width, queryArea.getPreferredSize().height));
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for centering
+        buttonPanel.add(submitButton);
+
+        queryPanel.add(queryArea, BorderLayout.CENTER);
+        queryPanel.add(buttonPanel, BorderLayout.EAST);
+        queryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 10 pixel padding around the entire panel
+
+        add(queryPanel, BorderLayout.NORTH);
+
+        model = new DefaultTableModel();
+        resultTable = new JTable(model);
+        sorter = new TableRowSorter<>(model);
+        resultTable.setRowSorter(sorter);
+        tableScrollPane = new JScrollPane(resultTable);
+        add(tableScrollPane, BorderLayout.CENTER);
+
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        filterField = new JTextField(35);
+        filterButton = new JButton("Apply Filter");
+        filterPanel.add(new JLabel("Enter filter text:"));
+        filterPanel.add(filterField);
+        filterPanel.add(filterButton);
+        add(filterPanel, BorderLayout.SOUTH);
+
+        submitButton.addActionListener(e -> executeQuery());
+        filterButton.addActionListener(e -> applyAdvancedFilter());
+    }

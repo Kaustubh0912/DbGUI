@@ -19,18 +19,30 @@ public class DatabaseGUI extends JFrame {
     private static final String USER = "root";
     private static final String PASS = "K@ustubh0912";
 
-    public DatabaseGUI() {
+    public DatabaseGUI() 
+    {
         setTitle("Display Query Results");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JPanel queryPanel = new JPanel(new BorderLayout());
-        queryArea = new JTextArea("SELECT * FROM employee", 3, 20);
-        queryArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        JPanel queryPanel = new JPanel(new BorderLayout(10, 0)); // 10 pixels horizontal gap
+        queryArea = new JTextArea("SELECT * FROM employee", 3, 35);
+        queryArea.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)  // 5 pixel padding on all sides
+        ));
+
         submitButton = new JButton("Submit Query");
+        submitButton.setPreferredSize(new Dimension(submitButton.getPreferredSize().width, queryArea.getPreferredSize().height));
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for centering
+        buttonPanel.add(submitButton);
+
         queryPanel.add(queryArea, BorderLayout.CENTER);
-        queryPanel.add(submitButton, BorderLayout.EAST);
+        queryPanel.add(buttonPanel, BorderLayout.EAST);
+        queryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 10 pixel padding around the entire panel
+
         add(queryPanel, BorderLayout.NORTH);
 
         model = new DefaultTableModel();
@@ -40,8 +52,8 @@ public class DatabaseGUI extends JFrame {
         tableScrollPane = new JScrollPane(resultTable);
         add(tableScrollPane, BorderLayout.CENTER);
 
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterField = new JTextField(20);
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        filterField = new JTextField(35);
         filterButton = new JButton("Apply Filter");
         filterPanel.add(new JLabel("Enter filter text:"));
         filterPanel.add(filterField);
@@ -52,38 +64,42 @@ public class DatabaseGUI extends JFrame {
         filterButton.addActionListener(e -> applyAdvancedFilter());
     }
 
-    private void executeQuery() {
+    private void executeQuery() 
+    {
         String query = queryArea.getText();
         try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
              Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+             ResultSet rs = stmt.executeQuery(query)) 
+            {
 
-            ResultSetMetaData metaData = rs.getMetaData();
-            int columnCount = metaData.getColumnCount();
+                ResultSetMetaData metaData = rs.getMetaData();
+                int columnCount = metaData.getColumnCount();
 
-            String[] columnNames = new String[columnCount];
-            for (int i = 1; i <= columnCount; i++) {
-                columnNames[i - 1] = metaData.getColumnName(i);
-            }
-
-            model.setColumnIdentifiers(columnNames);
-            model.setRowCount(0);  
-
-            while (rs.next()) {
-                Object[] row = new Object[columnCount];
+                String[] columnNames = new String[columnCount];
                 for (int i = 1; i <= columnCount; i++) {
-                    row[i - 1] = rs.getObject(i);
+                    columnNames[i - 1] = metaData.getColumnName(i);
                 }
-                model.addRow(row);
+
+                model.setColumnIdentifiers(columnNames);
+                model.setRowCount(0);  
+
+                while (rs.next()) {
+                    Object[] row = new Object[columnCount];
+                    for (int i = 1; i <= columnCount; i++) {
+                        row[i - 1] = rs.getObject(i);
+                    }
+                    model.addRow(row);
+                }
+
+                sorter.setRowFilter(null);
+                filterField.setText("");
+
+            } 
+            catch (SQLException e) 
+            {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error executing query: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             }
-
-            sorter.setRowFilter(null);
-            filterField.setText("");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error executing query: " + e.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-        }
     }
 
     private void applyAdvancedFilter() {
